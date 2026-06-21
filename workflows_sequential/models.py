@@ -7,7 +7,7 @@ Workflow graph. No untyped dicts between nodes — see SPEC.md §3.
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
 
@@ -58,7 +58,7 @@ class LighthouseFinding(BaseModel):
     # to fix — but `applicable=False` lets Diagnosis treat it as "not
     # relevant" rather than "good," which matters for accurate reporting.
     passed: bool
-    raw_score: float | None = None  # 0.0-1.0 where applicable, None for boolean/notApplicable checks
+    raw_score: Optional[float] = None  # 0.0-1.0 where applicable, None for boolean/notApplicable checks
     details: str  # raw Lighthouse explanation, unmodified
 
 
@@ -68,7 +68,7 @@ class AuditResult(BaseModel):
     findings: list[LighthouseFinding]
     raw_json_path: str  # where the full Lighthouse JSON was saved
 
-    def finding_for(self, check_id: CheckId) -> LighthouseFinding | None:
+    def finding_for(self, check_id: CheckId) -> Optional[LighthouseFinding]:
         """Convenience lookup — used by Report node when diffing before/after."""
         return next((f for f in self.findings if f.check_id == check_id), None)
 
@@ -107,7 +107,7 @@ class DiagnosisResult(BaseModel):
     audit: AuditResult
     items: list[DiagnosisItem]
 
-    def item_for(self, check_id: CheckId) -> DiagnosisItem | None:
+    def item_for(self, check_id: CheckId) -> Optional[DiagnosisItem]:
         return next((i for i in self.items if i.check_id == check_id), None)
 
 
@@ -122,9 +122,9 @@ class AriaLabelSuggestion(BaseModel):
     aria_label: str = Field(description="The suggested aria-label value to insert.")
 
 class RemediationDraft(BaseModel):
-    llms_txt_content: str | None = Field(default=None, description="Drafted content for llms.txt, or null if not needed.")
+    llms_txt_content: Optional[str] = Field(default=None, description="Drafted content for llms.txt, or null if not needed.")
     aria_suggestions: list[AriaLabelSuggestion] = Field(default_factory=list, description="List of ARIA label suggestion objects.")
-    webmcp_suggestion: str | None = Field(default=None, description="Suggested WebMCP integration code snippet or instructions, or null if not needed.")
+    webmcp_suggestion: Optional[str] = Field(default=None, description="Suggested WebMCP integration code snippet or instructions, or null if not needed.")
 
 
 ActionTaken = Literal[

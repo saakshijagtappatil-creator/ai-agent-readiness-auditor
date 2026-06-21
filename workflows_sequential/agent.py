@@ -52,6 +52,8 @@ from google.adk.agents.sequential_agent import SequentialAgent
 from google.adk.events import Event
 from google.adk.events.event_actions import EventActions
 from google.genai import types as genai_types
+from google.adk.skills import load_skill_from_dir
+from google.adk.tools.skill_toolset import SkillToolset
 
 from .models import (
     AuditResult,
@@ -388,8 +390,7 @@ def _remediation_draft_instruction(ctx) -> str:
         3. If it's a local path, the content of the HTML files.
         
         Your tasks:
-        1. If a check with check_id "llms-txt-exists" or "llms-txt" failed, or if the diagnosis asks for "llms_txt" remediation, draft a high-quality `llms.txt` file content in the `llms_txt_content` field.
-           - The drafted `llms.txt` must describe the site/repo purpose and its key routes/functionality.
+        1. If a check with check_id "llms-txt-exists" or "llms-txt" failed, or if the diagnosis asks for "llms_txt" remediation, you MUST load the "llms-txt-drafting" skill using the `load_skill` tool and follow its instructions to draft the `llms.txt` file content in the `llms_txt_content` field.
         2. If a check with check_id "agent-accessibility-tree" failed, or if any diagnosis asks for "aria_labels" remediation, look at the HTML contents provided and identify the elements that lack labels or roles (e.g. interactive elements like buttons, links, or inputs without clear accessible names).
            - Generate a list of `aria_suggestions`. Each suggestion must specify:
              * `file_path`: the relative path of the file (e.g. "index.html").
@@ -435,12 +436,18 @@ def _remediation_draft_instruction(ctx) -> str:
     return base_prompt + context
 
 
+# Load the llms-txt-drafting skill and initialize the SkillToolset
+_skills_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "skills"))
+_llms_txt_skill = load_skill_from_dir(os.path.join(_skills_dir, "llms-txt-drafting"))
+_skill_toolset = SkillToolset(skills=[_llms_txt_skill])
+
 remediation_draft_agent = LlmAgent(
     name="remediation_draft_agent",
     model="gemini-2.5-flash",
     instruction=_remediation_draft_instruction,
     output_schema=RemediationDraft,
     output_key="remediation_draft",
+    tools=[_skill_toolset],
 )
 
 
