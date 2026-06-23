@@ -158,21 +158,73 @@ rm -f sandbox/luminary-site/llms.txt
 * `SPEC.md`: Software specifications and ADK version constraints.
 * `docs/architecture.png`: High-resolution architecture layout.
 
-## Safety Rules
-* **Read-Only Targets**: Live URLs are strictly read-only. Auto-remediation executes file changes only if a local directory is provided.
-* **No File Destructive Overwrites**: The tool only inserts missing ARIA/caching elements; it preserves the original layout, styling, and functionality.
-* **No Secrets Committed**: The `.env` file containing the Gemini API keys is explicitly added to `.gitignore`.
+## Security Rules
+
+This project implements multiple layers of security:
+
+**Pipeline Security (agent.py):**
+- Read-Only URL Targets: Live URLs are strictly read-only. 
+  RemediationExecuteAgent enforces this in code — if the 
+  target is a URL, every remediation action is forced to 
+  skipped_unsafe regardless of what the LLM drafted
+- No Destructive Overwrites: The tool only inserts missing 
+  ARIA attributes and creates missing llms.txt files. It 
+  never overwrites existing non-empty files
+- No Secrets Committed: The .env file containing API keys 
+  is explicitly added to .gitignore and never staged or pushed
+
+**MCP Server Security (mcp_server.py):**
+- Path Traversal Guard: All local path targets are resolved 
+  to absolute paths and verified to reside within the 
+  workspace root. Attempts to audit outside paths 
+  (e.g. /etc, ../../) are immediately rejected with a 
+  security error — verified with automated tests
+- URL Scheme Validation: Only http:// and https:// schemes 
+  are accepted. file://, ftp://, and other schemes are rejected
+- Command Injection Prevention: All subprocesses use 
+  shell=False with clean argument lists — shell metacharacters 
+  in inputs cannot execute arbitrary commands
+- Read-Only Enforcement: The MCP server only exposes the 
+  audit_web_readiness tool. No file writing or remediation 
+  capabilities are exposed through the MCP interface
+
+## Connect via MCP
+
+Any MCP-compatible IDE (Claude Desktop, Cursor, Windsurf) 
+can connect to the Lighthouse Agentic Hub auditor directly.
+
+Add this to your MCP client configuration:
+
+```json
+{
+  "mcpServers": {
+    "lighthouse-agentic-hub": {
+      "command": "uv",
+      "args": ["run", "python", "-m", 
+               "workflows_sequential.mcp_server"],
+      "cwd": "/path/to/ai-readiness-v2"
+    }
+  }
+}
+```
+
+Replace /path/to/ai-readiness-v2 with your local clone path.
+
+Once connected, the tool audit_web_readiness is available 
+to any agent or LLM in your IDE:
+- audit_web_readiness("sandbox/luminary-site") — local audit
+- audit_web_readiness("https://yoursite.com") — live audit
 
 ## Course Concepts Demonstrated
 This project demonstrates several advanced patterns from the Google Agent Development Kit (ADK):
 
 | Concept | Implementation Location | Purpose |
 | :--- | :--- | :--- |
-| **SequentialAgent** | [workflows_sequential/agent.py](file:///Users/prasadpatil/agy2-projects/ai-readiness-v2/workflows_sequential/agent.py#L2081-L2092) | Chains multiple custom Python and LLM agents in a strict execution graph. |
-| **LlmAgent** | [workflows_sequential/agent.py](file:///Users/prasadpatil/agy2-projects/ai-readiness-v2/workflows_sequential/agent.py#L425-L432) | Defines LLM steps utilizing system instructions and Pydantic structured output mapping. |
-| **BaseAgent subclassing**| [workflows_sequential/agent.py](file:///Users/prasadpatil/agy2-projects/ai-readiness-v2/workflows_sequential/agent.py#L95-L101) | Subclasses `BaseAgent` to build custom deterministic agent nodes. |
-| **Shared State Delta** | [workflows_sequential/agent.py](file:///Users/prasadpatil/agy2-projects/ai-readiness-v2/workflows_sequential/agent.py#L82-L88) | Passes serializable data contracts between agents using SQLite-backed session states. |
-| **SkillToolset** | [workflows_sequential/agent.py](file:///Users/prasadpatil/agy2-projects/ai-readiness-v2/workflows_sequential/agent.py#L484-L508) | Attaches external skill guideline packages to the LLM agent tool calls. |
+| **SequentialAgent** | [workflows_sequential/agent.py](file:///path/to/ai-readiness-v2/workflows_sequential/agent.py#L2081-L2092) | Chains multiple custom Python and LLM agents in a strict execution graph. |
+| **LlmAgent** | [workflows_sequential/agent.py](file:///path/to/ai-readiness-v2/workflows_sequential/agent.py#L425-L432) | Defines LLM steps utilizing system instructions and Pydantic structured output mapping. |
+| **BaseAgent subclassing**| [workflows_sequential/agent.py](file:///path/to/ai-readiness-v2/workflows_sequential/agent.py#L95-L101) | Subclasses `BaseAgent` to build custom deterministic agent nodes. |
+| **Shared State Delta** | [workflows_sequential/agent.py](file:///path/to/ai-readiness-v2/workflows_sequential/agent.py#L82-L88) | Passes serializable data contracts between agents using SQLite-backed session states. |
+| **SkillToolset** | [workflows_sequential/agent.py](file:///path/to/ai-readiness-v2/workflows_sequential/agent.py#L484-L508) | Attaches external skill guideline packages to the LLM agent tool calls. |
 
 ## License
 This project is licensed under the MIT License.
