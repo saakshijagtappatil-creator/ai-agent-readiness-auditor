@@ -2548,7 +2548,7 @@ BENCHMARK
                 filename="report.html",
                 artifact=google.genai.types.Part(
                     inline_data=google.genai.types.Blob(
-                        mime_type="application/octet-stream",
+                        mime_type="text/html",
                         data=report_html_content.encode("utf-8")
                     )
                 )
@@ -2585,16 +2585,16 @@ BENCHMARK
             target_name = target.value
 
         summary_message = (
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "  Lighthouse Agentic Hub — Audit Complete\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            f"  Target:       {target_name}\n"
-            f"  Fixed:        {fixed_text}\n"
-            f"  Accessibility: {a11y_text}\n"
-            f"  Performance:  {perf_text}\n"
-            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
-            "  Your full interactive report is ready.\n"
-            "  Click report.html above to open it.\n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  \n"
+            "  Lighthouse Agentic Hub — Audit Complete  \n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  \n"
+            f"  Target:       {target_name}  \n"
+            f"  Fixed:        {fixed_text}  \n"
+            f"  Accessibility: {a11y_text}  \n"
+            f"  Performance:  {perf_text}  \n"
+            "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━  \n"
+            "  Your full interactive report is ready.  \n"
+            "  Click report.html above to open it.  \n"
             "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
         )
 
