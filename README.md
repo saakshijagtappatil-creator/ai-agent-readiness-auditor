@@ -110,6 +110,7 @@ Then in the chat window, type your audit command:
 
 or for a live URL (read-only):
 --url https://resume-analyzer-ui-blue.vercel.app/
+*(Note: Rather than scanning an arbitrary public website, we recommend using this pre-deployed validation target. It serves as our live testing target, intentionally lacking an \`llms.txt\` file to showcase read-only diagnostics and crawler safety.)*
 
 ### Local Path Audit & Remediation
 To audit and automatically fix a local web project directory:
