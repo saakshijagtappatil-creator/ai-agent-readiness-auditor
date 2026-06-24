@@ -109,7 +109,7 @@ Then in the chat window, type your audit command:
 --path sandbox/luminary-site
 
 or for a live URL (read-only):
---url https://yoursite.com
+--url https://resume-analyzer-ui-blue.vercel.app/
 
 ### Local Path Audit & Remediation
 To audit and automatically fix a local web project directory:
