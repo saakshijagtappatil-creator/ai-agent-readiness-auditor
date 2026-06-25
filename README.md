@@ -246,7 +246,11 @@ This project implements multiple layers of security:
 
 Any MCP-compatible IDE (Claude Desktop, Cursor, Windsurf) can connect to the Lighthouse Agentic Hub auditor directly.
 
-Add this to your MCP client configuration:
+> [!IMPORTANT]
+> **Prerequisites:** You must complete the local environment setup outlined in the [Setup](#setup) section above before starting the MCP server. The MCP server operates as a wrapper around the core sequential audit pipeline and requires the exact same system dependencies (globally installed Google Lighthouse CLI, a compatible Chromium browser binary, and a valid `GEMINI_API_KEY`).
+
+### 1. Add Configuration
+Add the following block to your MCP client settings file (e.g., `claude_desktop_config.json`):
 
 ```json
 {
@@ -254,17 +258,31 @@ Add this to your MCP client configuration:
     "lighthouse-agentic-hub": {
       "command": "uv",
       "args": ["run", "python", "-m", "workflows_sequential.mcp_server"],
-      "cwd": "/path/to/ai-readiness-v2"
+      "cwd": "/path/to/ai-readiness-v2",
+      "env": {
+        "GEMINI_API_KEY": "YOUR_ACTUAL_API_KEY"
+      }
     }
   }
 }
 ```
 
-Replace /path/to/ai-readiness-v2 with your local clone path.
+*   Replace `/path/to/ai-readiness-v2` with the absolute path to your local repository clone.
+*   Provide your Gemini API key in the `env` block, as IDEs run in clean shells that do not inherit standard terminal environment variables.
 
-Once connected, the tool audit_web_readiness is available to any agent or LLM in your IDE:
-- audit_web_readiness("sandbox/luminary-site") — local audit
-- audit_web_readiness("https://yoursite.com") — live audit
+### 2. Verify Connection (Pre-flight Check)
+To verify the server starts and exposes its tools correctly before integrating it with your IDE, run the official MCP Inspector from your terminal:
+
+```bash
+npx @modelcontextprotocol/inspector uv run python -m workflows_sequential.mcp_server
+```
+
+This will launch a local web dashboard where you can see the registered `audit_web_readiness` tool and test its execution directly.
+
+### 3. Usage
+Once connected, the tool `audit_web_readiness` is available to any agent or LLM in your IDE:
+- `audit_web_readiness("sandbox/luminary-site")` — local audit
+- `audit_web_readiness("https://yoursite.com")` — live audit
 
 ## License
 This project is licensed under the MIT License.
